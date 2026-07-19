@@ -166,6 +166,7 @@ ARCHETYPES={
             "standing_dunk": 1.0,
             "free_throw": 1.0
         },
+    },
     "post_scorer": {
         "name": "Post Scorer",
         "description":"Player that excels at scoring in the post and around the basket",
@@ -258,10 +259,20 @@ ARCHETYPES={
             },
         }
     }
-}
+
+def get_valid_archetypes(position: str) -> list:
+    archetypes = []
+    for archetype in ARCHETYPES:
+        if position in ARCHETYPES[archetype]["valid_positions"]:
+            archetypes.append(archetype)
+    return archetypes
 
 def calculate_archetype_score(player_ratings: dict, archetype: str) -> float:
-    pass
+    score = 0.0
+    profileWeights = ARCHETYPES[archetype]["profile_weights"]
+    for stat, weight in profileWeights.items():
+        score += player_ratings.get(stat, 0) * weight
+    return score
 
 def determine_archetype(player_ratings: dict, position: str) -> str:
     archetype = ""
@@ -279,14 +290,10 @@ def determine_archetype(player_ratings: dict, position: str) -> str:
     return archetype
 
 def get_development_bonus(archetype: str, stat: str) -> float:
-    pass
-
-def get_valid_archetypes(position: str) -> list:
-    archetypes = []
-    for archetype in ARCHETYPES:
-        if position in ARCHETYPES[archetype]["valid_positions"]:
-            archetypes.append(archetype)
-    return archetypes
+    if stat in ARCHETYPES[archetype]["development_weights"]:
+        return ARCHETYPES[archetype]["development_weights"][stat]
+    else:
+        return 1.0
 
 
 def get_archetype_scores(player_ratings: dict, position: str) -> dict:
