@@ -1,1 +1,0 @@
-# TeamRatings.py

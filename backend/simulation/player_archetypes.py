@@ -1,6 +1,3 @@
-# PlayerArchetypes.py
-# Define player archetypes
-
 ARCHETYPES={
     "facilitator": {
         "name": "Facilitator",
@@ -173,8 +170,8 @@ ARCHETYPES={
         "valid_positions": ["SF", "PF", "C"],
         "profile_weights": {
             "inside_scoring": 0.35,
-            "standing_dunk": 0.30,
-            "strength": 0.20,
+            "standing_dunk": 0.25,
+            "strength": 0.25,
             "offensive_rebounding": 0.15,
         },
         "development_weights": {
