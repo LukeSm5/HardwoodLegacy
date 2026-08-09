@@ -28,6 +28,7 @@ NIL_VALUES={
         "low": 0
     }
 }
+
 # The max each prestige level of a program can offer
 PRESTIGE_OFFERS= {
     "blue_blood": {
@@ -49,13 +50,22 @@ PRESTIGE_OFFERS= {
 }
 
 NEGOTIATION_OUTCOMES ={
-    "accepted",
-    "countered",
-    "declined"
+    "accepted": {
+        "description": "Player accepts the offer",
+        "threshold": 0.9
+    },
+    "countered": {
+        "description": "Player counters with a higher demand",
+        "threshold": 0.6
+    },
+    "declined": {
+        "description": "Player declines the offer",
+        "threshold": 0.0
+    }
 }
 
 NIL_FACTORS={
-
+    # will do later, but for now just want a basic prototype
 }
 
 def calculate_nil_market_value(ranking: str):
@@ -68,14 +78,29 @@ def calculate_nil_budget(prestige_tier: str):
         raise ValueError(f"Invalid Prestige: {prestige_tier}")
     return PRESTIGE_OFFERS[prestige_tier]["total_budget"]
 
-def generate_initial_nil_offer():
-    pass
+def generate_initial_nil_offer(ranking: str, prestige_tier: str) -> int:
+    market_value = calculate_nil_market_value(ranking)
+    max_offer = PRESTIGE_OFFERS[prestige_tier]["max_offer"]
+    # offer is the lower of what they can afford and the market value
+    return min(market_value, max_offer)
 
-def process_negotiation():
-    pass
+def process_negotiation(offer: int, ranking: str):
+    market_value = calculate_nil_market_value(ranking)
+    ratio = offer / market_value
 
-def calculate_nil_influence():
-    pass
+    if ratio >= NEGOTIATION_OUTCOMES["accepted"]["threshold"]:
+        return "accepted"
+    elif ratio >= NEGOTIATION_OUTCOMES["countered"]["threshold"]:
+        return "countered"
+    else:
+        return "declined"
+
+def calculate_nil_influence(offer: int, ranking: str) -> float:
+    market_value = calculate_nil_market_value(ranking)
+    if market_value == 0:
+        return 0.0
+    # cap at 1.0 so an over-market offer doesn't exceed full influence
+    return min(offer / market_value, 1.0)
 
 def update_nil_budget(remaining_budget: int, nil_offer: int):
     if remaining_budget - nil_offer < 0:
