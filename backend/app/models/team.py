@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from player import Player
+from backend.app.models.player import Player
 
 @dataclass
 class Team:
-    id: int
+    id: str
     name: str
     city: str
     state: str

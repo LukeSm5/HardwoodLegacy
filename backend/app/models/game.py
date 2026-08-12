@@ -2,4 +2,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Game:
-    id: int
+    id: str
+    score: dict[str, int]
+    stats: dict[str, dict[str, int]] 
+    time: float

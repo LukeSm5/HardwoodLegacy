@@ -1,14 +1,7 @@
 from dataclasses import dataclass
+from backend.app.models.base import PersonBase
 
 @dataclass
-class Player:
-    id: int
-    name: str
-    team_id: int
-    position: str
-    height_feet: int
-    height_inches: int
-    weight: int
-    year: str
-    archetype: str
+class Player(PersonBase):
+    team_id: str
     ratings: dict[str, int]
