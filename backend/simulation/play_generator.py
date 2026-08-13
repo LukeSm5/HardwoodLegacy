@@ -1,4 +1,7 @@
 from dataclasses import dataclass
+import random
+
+from backend.app.models.player import Player
 # Outcomes:
 # 2 pt (make/miss)
     # Make
@@ -80,8 +83,12 @@ class PlayResult:
     outcome: str
     points_scored: int
     time_consumed: int
+    player_involved: dict[str, str]
 
-POSSESION_OUTCOMES = {
+BONUS_THRESHOLD = 7
+DOUBLE_BONUS_THRESHOLD = 10
+
+POSSESSION_OUTCOMES = {
     "turnover": 0.13,
     "foul": 0.15,
     "2pt": 0.47,
@@ -101,28 +108,58 @@ TURNOVER_TYPES = {
     "out_of_bounds": 0.12,
 }
 
+REBOUND_WEIGHTS = {
+    "offensive": {
+        "height_factor": 0.6,
+        "skill_factor": 0.4
+    },
+    "defensive": {
+        "height_factor": 0.4,
+        "skill_factor": 0.6
+    }
+}
+
 FOUL_TYPES = {
     "defensive": {
+        "reach_in": 0.4,
+        "block": 0.2, 
+        "shooting": 0.3,
+        "off_ball": 0.08,
+        "technical": 0.02
 
     }, 
-    "offensive": {}
+    "offensive": {
+        "charge": 0.5,
+        "illegal_screen": 0.3,
+        "over_the_back": 0.05,
+        "loose_ball_foul": 0.12,
+        "three_seconds": 0.03
+    }
+}
+
+TIME_RANGES_BY_OUTCOME = {
+    "turnover": (2, 30, 10),
+    "2pt": (4, 30, 18),
+    "3pt": (4, 30, 20),
+    "foul": (4, 25, 12)
 }
 
 
-def generate_play(game_state) -> str:
+def generate_play(game_state: GameState) -> str:
     pass
 
-def pick_player_for_play(roster, role) -> str:
+def pick_player_for_play(roster: list[Player], role: str) -> Player:
     pass
 
-def resolve_outcome() -> PlayResult: 
+def resolve_outcome(outcome: str, game_state: GameState, offense: list[Player], defense: list[Player]) -> PlayResult:
     pass
 
-def consume_time(outcome) -> int:
+def consume_time(outcome: str) -> float:
+    low, high, mode = TIME_RANGES_BY_OUTCOME.get(outcome, (4, 30, 15))
+    return float(random.triangular(low, high, mode))
+
+def update_game_state(game_state: GameState, play_result: PlayResult) -> GameState:
     pass
 
-def update_game_state() -> GameState:
-    pass
-
-def simulate_possession() -> PlayResult:
+def simulate_possession(game_state: GameState, offense: list[Player], defense: list[Player]) -> PlayResult:
     pass
