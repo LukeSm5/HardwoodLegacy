@@ -82,8 +82,9 @@ class GameState:
 class PlayResult:
     outcome: str
     points_scored: int
-    time_consumed: int
+    time_consumed: float
     player_involved: dict[str, str]
+    next_possession_team: str
 
 BONUS_THRESHOLD = 7
 DOUBLE_BONUS_THRESHOLD = 10
@@ -152,14 +153,31 @@ def pick_player_for_play(roster: list[Player], role: str) -> Player:
     pass
 
 def resolve_outcome(outcome: str, game_state: GameState, offense: list[Player], defense: list[Player]) -> PlayResult:
-    pass
+    if outcome == "defensive_foul":
+        pass
+    if outcome == "offensive_foul":
+        pass
+
 
 def consume_time(outcome: str) -> float:
     low, high, mode = TIME_RANGES_BY_OUTCOME.get(outcome, (4, 30, 15))
     return float(random.triangular(low, high, mode))
 
 def update_game_state(game_state: GameState, play_result: PlayResult) -> GameState:
-    pass
+    game_state.time_remaining -= play_result.time_consumed
+    if play_result.points_scored != 0:
+        if game_state.possession_team == "home":
+            game_state.home_score += play_result.points_scored
+        else:
+            game_state.away_score += play_result.points_scored
+    if play_result.outcome in ["foul"]:
+        fouling_player_id = play_result.player_involved["foul"]
+        game_state.player_fouls[fouling_player_id] += 1
+        if play_result.next_possession_team == game_state.possession_team:
+            opposing_team = "away" if game_state.possession_team == "home" else "home"
+            game_state.team_fouls[opposing_team] += 1
+    game_state.possession_team = play_result.next_possession_team
+    return game_state
 
 def simulate_possession(game_state: GameState, offense: list[Player], defense: list[Player]) -> PlayResult:
     pass
