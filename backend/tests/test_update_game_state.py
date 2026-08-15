@@ -2,11 +2,6 @@ import pytest
 from backend.simulation.play_generator import (
     GameState, 
     PlayResult, 
-    consume_time,
-    generate_play,
-    pick_player_for_play,
-    resolve_outcome,
-    simulate_possession,
     update_game_state)
 
 def make_base_state():
@@ -20,7 +15,7 @@ def make_base_state():
         half=1,
     )
 
-def test_2pt_make_update_game_state():
+def test_2pt_make():
     state = make_base_state()
     result = PlayResult(
         outcome = "2pt",
@@ -39,7 +34,7 @@ def test_2pt_make_update_game_state():
     assert state.player_fouls == {"p1": 0, "p2": 0, "p3": 0, "p4": 0, "p5": 0}
     assert state.team_fouls == {"home": 0, "away": 0}
 
-def test_2pt_miss_oboard_update_game_state():
+def test_2pt_miss_oboard():
     state = make_base_state()
     result = PlayResult(
             outcome = "2pt",
@@ -59,7 +54,7 @@ def test_2pt_miss_oboard_update_game_state():
     assert state.player_fouls == {"p1": 0, "p2": 0, "p3": 0, "p4": 0, "p5": 0}
     assert state.team_fouls == {"home": 0, "away": 0}
 
-def test_3pt_make_update_game_state():
+def test_3pt_make():
     state = make_base_state()
     result = PlayResult(
             outcome = "3pt",
@@ -78,7 +73,7 @@ def test_3pt_make_update_game_state():
     assert state.player_fouls == {"p1": 0, "p2": 0, "p3": 0, "p4": 0, "p5": 0}
     assert state.team_fouls == {"home": 0, "away": 0}
 
-def test_3pt_miss_oboard_update_game_state():
+def test_3pt_miss_oboard():
     state = make_base_state()
     result = PlayResult(
                 outcome = "3pt",
@@ -98,7 +93,7 @@ def test_3pt_miss_oboard_update_game_state():
     assert state.player_fouls == {"p1": 0, "p2": 0, "p3": 0, "p4": 0, "p5": 0}
     assert state.team_fouls == {"home": 0, "away": 0}
 
-def test_3pt_miss_update_game_state():
+def test_3pt_miss():
     state = make_base_state()
     result = PlayResult(
         outcome = "3pt",
@@ -118,7 +113,7 @@ def test_3pt_miss_update_game_state():
     assert state.player_fouls == {"p1": 0, "p2": 0, "p3": 0, "p4": 0, "p5": 0}
     assert state.team_fouls == {"home": 0, "away": 0}
 
-def test_turnover_update_game_state():
+def test_turnover():
     state = make_base_state()
     result = PlayResult(
             outcome = "turnover",
@@ -138,7 +133,7 @@ def test_turnover_update_game_state():
     assert state.player_fouls == {"p1": 0, "p2": 0, "p3": 0, "p4": 0, "p5": 0}
     assert state.team_fouls == {"home": 0, "away": 0}
 
-def test_offensive_foul_update_game_state():
+def test_offensive_foul():
     state = make_base_state()
     result = PlayResult(
             outcome = "foul",
@@ -157,7 +152,7 @@ def test_offensive_foul_update_game_state():
     assert state.player_fouls == {"p1": 1, "p2": 0, "p3": 0, "p4": 0, "p5": 0}
     assert state.team_fouls == {"home": 0, "away": 0}
 
-def test_defensive_foul_update_game_state():
+def test_defensive_foul():
     state = make_base_state()
     result = PlayResult(
             outcome = "foul",
@@ -175,3 +170,36 @@ def test_defensive_foul_update_game_state():
     assert state.away_score == 0
     assert state.player_fouls == {"p1": 1, "p2": 0, "p3": 0, "p4": 0, "p5": 0}
     assert state.team_fouls == {"home": 0, "away": 1}
+
+def test_end_of_half():
+    state = make_base_state()
+    state.time_remaining = 29
+    result = PlayResult(
+        outcome = "2pt",
+        points_scored = 0,
+        time_consumed = 30,
+        player_involved = {
+            "shooter": "p1",
+        },
+        next_possession_team="home"
+    )
+    state = update_game_state(state, result)
+    assert state.time_remaining == 1200.0
+    assert state.half == 2
+
+def test_end_of_game():
+    state = make_base_state()
+    state.time_remaining = 29
+    state.half = 2
+    result = PlayResult(
+        outcome = "2pt",
+        points_scored = 0,
+        time_consumed = 30,
+        player_involved = {
+            "shooter": "p1",
+        },
+        next_possession_team="home"
+    )
+    state = update_game_state(state, result)
+    assert state.time_remaining == 0
+    assert state.half == 2

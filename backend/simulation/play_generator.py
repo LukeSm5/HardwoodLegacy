@@ -165,6 +165,12 @@ def consume_time(outcome: str) -> float:
 
 def update_game_state(game_state: GameState, play_result: PlayResult) -> GameState:
     game_state.time_remaining -= play_result.time_consumed
+    if game_state.time_remaining < 0:
+        if game_state.half == 1:
+            game_state.time_remaining = 1200.0
+            game_state.half = 2
+        else:
+            game_state.time_remaining = 0
     if play_result.points_scored != 0:
         if game_state.possession_team == "home":
             game_state.home_score += play_result.points_scored
