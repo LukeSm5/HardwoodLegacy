@@ -24,6 +24,10 @@ TURNOVER_TYPES = {
     "out_of_bounds": 0.12,
 }
 
+ASSIST_WEIGHTS = {
+    "passing": 0.6,
+    "pass_iq": 0.4
+}
 REBOUND_WEIGHTS = {
     "offensive": {
         "height_factor": 0.6,
