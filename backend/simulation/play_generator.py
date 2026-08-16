@@ -25,7 +25,8 @@ from backend.simulation.play_weights import (
     calculate_fouler_weight,
     evaluate_three_point_make_probability,
     evaluate_two_point_make_probability,
-    roll_shot_outcome
+    roll_shot_outcome,
+    roll_assist_outcome
 )
 
 # Outcomes:
@@ -144,6 +145,8 @@ def resolve_outcome(outcome: str, game_state: GameState, offense: list[Player], 
         if made:
             points_scored = 2
             next_possession_team = defending_team
+            if assist:
+                assister = pick_player_for_play(offense, "assister")
         else:
             points_scored = 0
             rebounding_type = determine_rebound_type()
@@ -156,6 +159,8 @@ def resolve_outcome(outcome: str, game_state: GameState, offense: list[Player], 
         time_consumed = consume_time("2pt")
         if rebounder:
             return PlayResult("2pt", points_scored, time_consumed, {"shooter": shooter.id, "rebounder": rebounder.id}, next_possession_team)
+        elif assister:
+            return PlayResult("2pt", points_scored, time_consumed, {"shooter": shooter.id, "assister": assister.id}, next_possession_team)
         else:
             return PlayResult("2pt", points_scored, time_consumed, {"shooter": shooter.id}, next_possession_team)
 
@@ -166,6 +171,9 @@ def resolve_outcome(outcome: str, game_state: GameState, offense: list[Player], 
         if made:
             points_scored = 3
             next_possession_team = defending_team
+            assist = roll_assist_outcome()
+            if assist:
+                assister = pick_player_for_play(offense, "assister")
         else:
             points_scored = 0
             rebounding_type = determine_rebound_type()
@@ -178,6 +186,8 @@ def resolve_outcome(outcome: str, game_state: GameState, offense: list[Player], 
         time_consumed = consume_time("3pt")
         if rebounder:
             return PlayResult("3pt", points_scored, time_consumed, {"shooter": shooter.id, "rebounder": rebounder.id}, next_possession_team)
+        elif assister:
+            return PlayResult("3pt", points_scored, time_consumed, {"shooter": shooter.id, "assister": assister.id}, next_possession_team)
         else:
             return PlayResult("3pt", points_scored, time_consumed, {"shooter": shooter.id}, next_possession_team)
             

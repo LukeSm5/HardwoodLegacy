@@ -9,7 +9,9 @@ from backend.simulation.play_constants import ( MAX_HEIGHT_INCHES,
                                                ASSIST_WEIGHTS,
                                                TURNOVER_WEIGHTS,
                                                MAX_RATING,
-                                               SHOOTING_VARIANCE )
+                                               SHOOTING_VARIANCE,
+                                               ASSIST_PROBABILITY,
+                                               ASSIST_VARIANCE )
 from backend.app.models.player import Player
 
 def calculate_rebound_weight(player: Player, rebound_type: str) -> float:
@@ -80,5 +82,11 @@ def evaluate_two_point_make_probability(player: Player, shot_type: str) -> float
 def roll_shot_outcome(base_probability: float, variance: float = SHOOTING_VARIANCE) -> bool:
     low = max(0.0, base_probability - variance)
     high = min (1.0, base_probability + variance)
+    actual_probability = random.uniform(low, high)
+    return random.random() < actual_probability
+
+def roll_assist_outcome(base_probability: float = ASSIST_PROBABILITY) -> bool:
+    low = max(0.0, base_probability - ASSIST_VARIANCE)
+    high = min(1.0, base_probability + ASSIST_VARIANCE)
     actual_probability = random.uniform(low, high)
     return random.random() < actual_probability
