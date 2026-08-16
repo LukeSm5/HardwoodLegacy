@@ -1,3 +1,5 @@
+import random
+
 from backend.simulation.play_constants import ( MAX_HEIGHT_INCHES, 
                                                MIN_HEIGHT_INCHES, 
                                                REBOUND_WEIGHTS, 
@@ -6,7 +8,8 @@ from backend.simulation.play_constants import ( MAX_HEIGHT_INCHES,
                                                BLOCK_WEIGHTS,
                                                ASSIST_WEIGHTS,
                                                TURNOVER_WEIGHTS,
-                                               MAX_RATING )
+                                               MAX_RATING,
+                                               SHOOTING_VARIANCE )
 from backend.app.models.player import Player
 
 def calculate_rebound_weight(player: Player, rebound_type: str) -> float:
@@ -52,7 +55,7 @@ def calculate_blocker_weight(player: Player) -> float:
     return block_rating * BLOCK_WEIGHTS["block"] + interior_defense_rating * BLOCK_WEIGHTS["interior_defense"] + player_height_factor * BLOCK_WEIGHTS["height"]
 
 def calculate_fouler_weight(player: Player, foul_side: str) -> float:
-    pass
+    return 1.0
 
 def height_to_inches(height_feet: int, height_inches: int) -> int:
     return height_feet * 12 + height_inches
@@ -60,3 +63,22 @@ def height_to_inches(height_feet: int, height_inches: int) -> int:
 def normalize_height(height_inches: int) -> float:
     clamped = max(MIN_HEIGHT_INCHES, min(height_inches, MAX_HEIGHT_INCHES))
     return (clamped - MIN_HEIGHT_INCHES) / (MAX_HEIGHT_INCHES - MIN_HEIGHT_INCHES)
+
+def evaluate_three_point_make_probability(player: Player) -> float:
+    return player.ratings["3pt"] / (MAX_RATING * 2)
+
+def evaluate_two_point_make_probability(player: Player, shot_type: str) -> float:
+    if shot_type == "layup":
+        return player.ratings["inside_scoring"] / MAX_RATING
+    elif shot_type == "mid_range":
+        return player.ratings["mid_range"] / (MAX_RATING * 1.5)
+    elif shot_type == "dunk":
+        return (player.ratings["driving_dunk"] + player.ratings["standing_dunk"]) / (MAX_RATING * 2)
+    else:
+        raise ValueError("Invalid Shot Attempt")
+
+def roll_shot_outcome(base_probability: float, variance: float = SHOOTING_VARIANCE) -> bool:
+    low = max(0.0, base_probability - variance)
+    high = min (1.0, base_probability + variance)
+    actual_probability = random.uniform(low, high)
+    return random.random() < actual_probability

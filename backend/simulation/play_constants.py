@@ -3,6 +3,7 @@ DOUBLE_BONUS_THRESHOLD = 10
 MIN_HEIGHT_INCHES = 68 
 MAX_HEIGHT_INCHES = 87
 MAX_RATING = 99
+SHOOTING_VARIANCE = 0.10
 
 POSSESSION_OUTCOMES = {
     "turnover": 0.13,
@@ -97,4 +98,10 @@ TIME_RANGES_BY_OUTCOME = {
     "3pt": (4, 30, 20),
     "foul": (4, 25, 12),
     "block": (4, 30, 18)
+}
+
+TWO_POINT_SHOTS = {
+    "layup": 0.5,
+    "mid_range": 0.3,
+    "dunk": 0.2
 }

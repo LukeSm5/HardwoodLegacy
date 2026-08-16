@@ -12,6 +12,7 @@ from backend.simulation.play_constants import (
     FOUL_TYPES, 
     BONUS_THRESHOLD, 
     DOUBLE_BONUS_THRESHOLD,
+    TWO_POINT_SHOTS,
     REBOUNDING_CHANCE,
     FOUL_WEIGHTS)
 from backend.simulation.play_weights import (
@@ -21,7 +22,10 @@ from backend.simulation.play_weights import (
     calculate_scorer_weight,
     calculate_stealer_weight,
     calculate_turnover_weight,
-    calculate_fouler_weight
+    calculate_fouler_weight,
+    evaluate_three_point_make_probability,
+    evaluate_two_point_make_probability,
+    roll_shot_outcome
 )
 
 # Outcomes:
@@ -91,9 +95,6 @@ from backend.simulation.play_weights import (
         # Teams MAY change possession
 
 def generate_play(game_state: GameState) -> str:
-    defending_team = "away" if game_state.possession_team == "home" else "home"
-
-    
     outcomes = list(POSSESSION_OUTCOMES.keys())
     weights = list(POSSESSION_OUTCOMES.values())
     return random.choices(outcomes, weights=weights, k=1)[0]
@@ -127,19 +128,64 @@ def determine_foul_type() -> str:
     weights = list(FOUL_WEIGHTS.values())
     return random.choices(types, weights=weights, k=1)[0]
 
+def determine_two_point_shot_type() -> str:
+    types = list(TWO_POINT_SHOTS.keys())
+    weights = list(TWO_POINT_SHOTS.values())
+    return random.choices(types, weights=weights, k=1)[0]
+
 def resolve_outcome(outcome: str, game_state: GameState, offense: list[Player], defense: list[Player]) -> PlayResult:
+    defending_team = "away" if game_state.possession_team == "home" else "home"
+    rebounder = None
     if outcome == "2pt":
-        pass
+        shooter = pick_player_for_play(offense, "shooter")
+        two_point_shot = determine_two_point_shot_type()
+        make_chance = evaluate_two_point_make_probability(shooter, two_point_shot)
+        made = roll_shot_outcome(make_chance)
+        if made:
+            points_scored = 2
+            next_possession_team = defending_team
+        else:
+            points_scored = 0
+            rebounding_type = determine_rebound_type()
+            if rebounding_type == "offensive":
+                rebounder = pick_player_for_play(offense, "rebounder", rebounding_type)
+                next_possession_team = game_state.possession_team
+            else:
+                rebounder = pick_player_for_play(defense, "rebounder", rebounding_type)
+                next_possession_team = defending_team
+        time_consumed = consume_time("2pt")
+        if rebounder:
+            return PlayResult("2pt", points_scored, time_consumed, {"shooter": shooter.id, "rebounder": rebounder.id}, next_possession_team)
+        else:
+            return PlayResult("2pt", points_scored, time_consumed, {"shooter": shooter.id}, next_possession_team)
+
     elif outcome == "3pt":
-        pass
+        shooter = pick_player_for_play(offense, "shooter")
+        make_chance = evaluate_three_point_make_probability(shooter)
+        made = roll_shot_outcome(make_chance)
+        if made:
+            points_scored = 3
+            next_possession_team = defending_team
+        else:
+            points_scored = 0
+            rebounding_type = determine_rebound_type()
+            if rebounding_type == "offensive":
+                rebounder = pick_player_for_play(offense, "rebounder", rebounding_type)
+                next_possession_team = game_state.possession_team
+            else:
+                rebounder = pick_player_for_play(defense, "rebounder", rebounding_type)
+                next_possession_team = defending_team
+        time_consumed = consume_time("3pt")
+        if rebounder:
+            return PlayResult("3pt", points_scored, time_consumed, {"shooter": shooter.id, "rebounder": rebounder.id}, next_possession_team)
+        else:
+            return PlayResult("3pt", points_scored, time_consumed, {"shooter": shooter.id}, next_possession_team)
+            
     elif outcome == "foul":
         foul_type = determine_foul_type()
         if foul_type == "offensive":
             fouler = pick_player_for_play(offense, "fouler", "offensive")
-            if game_state.possession_team == "home":
-                next_possession_team = "away"
-            else:
-                next_possession_team = "home"
+            next_possession_team = defending_team
         else:
             fouler = pick_player_for_play(defense, "fouler", "defensive")
             next_possession_team = game_state.possession_team
