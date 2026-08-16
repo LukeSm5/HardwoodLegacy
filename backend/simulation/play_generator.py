@@ -11,7 +11,8 @@ from backend.simulation.play_constants import (
     TURNOVER_TYPES, 
     FOUL_TYPES, 
     BONUS_THRESHOLD, 
-    DOUBLE_BONUS_THRESHOLD)
+    DOUBLE_BONUS_THRESHOLD,
+    REBOUNDING_CHANCE)
 from backend.simulation.play_weights import (
     calculate_rebound_weight,
     calculate_assister_weight,
@@ -114,6 +115,11 @@ def pick_player_for_play(roster: list[Player], role: str, sub_type: str = None) 
         raise ValueError(f"Unknown role: {role}")
     return random.choices(roster, weights=weights, k=1)[0]
 
+def determine_rebound_type() -> str:
+    types = list(REBOUNDING_CHANCE.keys())
+    weights = list(REBOUNDING_CHANCE.values())
+    return random.choices(types, weights=weights, k=1)[0]
+
 def resolve_outcome(outcome: str, game_state: GameState, offense: list[Player], defense: list[Player]) -> PlayResult:
     if outcome == "2pt":
         pass
@@ -124,7 +130,14 @@ def resolve_outcome(outcome: str, game_state: GameState, offense: list[Player], 
     elif outcome == "turnover":
         pass
     elif outcome == "block":
-        pass
+        blocker = pick_player_for_play(defense, "blocker")
+        rebound_type = determine_rebound_type()
+        if rebound_type == "offensive":
+            rebounder = pick_player_for_play(offense, "rebounder", rebound_type)
+        else:
+            rebounder = pick_player_for_play(defense, "rebounder", rebound_type)
+        
+        
 
 def consume_time(outcome: str) -> float:
     low, high, mode = TIME_RANGES_BY_OUTCOME.get(outcome, (4, 30, 15))

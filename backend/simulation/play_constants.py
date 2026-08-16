@@ -53,6 +53,11 @@ SCORING_WEIGHTS = {
     "standing_dunk": 0.1
 }
 
+REBOUNDING_CHANCE = {
+    "offensive": 0.31,
+    "defensive": 0.69
+}
+
 STEAL_WEIGHTS = {
     "steal": 0.5,
     "speed": 0.3,
