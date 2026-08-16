@@ -51,6 +51,9 @@ def calculate_blocker_weight(player: Player) -> float:
     interior_defense_rating = player.ratings["interior_defense"] / MAX_RATING
     return block_rating * BLOCK_WEIGHTS["block"] + interior_defense_rating * BLOCK_WEIGHTS["interior_defense"] + player_height_factor * BLOCK_WEIGHTS["height"]
 
+def calculate_fouler_weight(player: Player, foul_side: str) -> float:
+    pass
+
 def height_to_inches(height_feet: int, height_inches: int) -> int:
     return height_feet * 12 + height_inches
 

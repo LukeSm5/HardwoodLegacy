@@ -12,14 +12,16 @@ from backend.simulation.play_constants import (
     FOUL_TYPES, 
     BONUS_THRESHOLD, 
     DOUBLE_BONUS_THRESHOLD,
-    REBOUNDING_CHANCE)
+    REBOUNDING_CHANCE,
+    FOUL_WEIGHTS)
 from backend.simulation.play_weights import (
     calculate_rebound_weight,
     calculate_assister_weight,
     calculate_blocker_weight,
     calculate_scorer_weight,
     calculate_stealer_weight,
-    calculate_turnover_weight
+    calculate_turnover_weight,
+    calculate_fouler_weight
 )
 
 # Outcomes:
@@ -90,9 +92,7 @@ from backend.simulation.play_weights import (
 
 def generate_play(game_state: GameState) -> str:
     defending_team = "away" if game_state.possession_team == "home" else "home"
-    
-    if game_state.team_fouls[defending_team] >= BONUS_THRESHOLD:
-        return "foul"
+
     
     outcomes = list(POSSESSION_OUTCOMES.keys())
     weights = list(POSSESSION_OUTCOMES.values())
@@ -111,6 +111,8 @@ def pick_player_for_play(roster: list[Player], role: str, sub_type: str = None) 
         weights = [calculate_stealer_weight(player) for player in roster]
     elif role == "blocker":
         weights = [calculate_blocker_weight(player) for player in roster]
+    elif role == "fouler":
+        weights = [calculate_fouler_weight(player, sub_type) for player in roster]
     else:
         raise ValueError(f"Unknown role: {role}")
     return random.choices(roster, weights=weights, k=1)[0]
@@ -120,23 +122,37 @@ def determine_rebound_type() -> str:
     weights = list(REBOUNDING_CHANCE.values())
     return random.choices(types, weights=weights, k=1)[0]
 
+def determine_foul_type() -> str:
+    types = list(FOUL_WEIGHTS.keys())
+    weights = list(FOUL_WEIGHTS.values())
+    return random.choices(types, weights=weights, k=1)[0]
+
 def resolve_outcome(outcome: str, game_state: GameState, offense: list[Player], defense: list[Player]) -> PlayResult:
     if outcome == "2pt":
         pass
     elif outcome == "3pt":
         pass
     elif outcome == "foul":
-        pass
-    elif outcome == "turnover":
-        pass
-    elif outcome == "block":
-        blocker = pick_player_for_play(defense, "blocker")
-        rebound_type = determine_rebound_type()
-        if rebound_type == "offensive":
-            rebounder = pick_player_for_play(offense, "rebounder", rebound_type)
+        foul_type = determine_foul_type()
+        if foul_type == "offensive":
+            fouler = pick_player_for_play(offense, "fouler", "offensive")
+            if game_state.possession_team == "home":
+                next_possession_team = "away"
+            else:
+                next_possession_team = "home"
         else:
-            rebounder = pick_player_for_play(defense, "rebounder", rebound_type)
-        
+            fouler = pick_player_for_play(defense, "fouler", "defensive")
+            next_possession_team = game_state.possession_team
+        time_consumed = consume_time("foul")
+        return PlayResult("foul", 0, time_consumed, {"fouler": fouler.id}, next_possession_team)
+    elif outcome == "turnover":
+        turnover_recipient = pick_player_for_play(offense, "turnover_recipient")
+        time_consumed = consume_time("turnover")
+        if game_state.possession_team == "home":
+            next_possession_team = "away"
+        else:
+            next_possession_team = "home"
+        return PlayResult("turnover", 0, time_consumed, {"turnover_recipient": turnover_recipient.id}, next_possession_team)
         
 
 def consume_time(outcome: str) -> float:
@@ -157,7 +173,7 @@ def update_game_state(game_state: GameState, play_result: PlayResult) -> GameSta
         else:
             game_state.away_score += play_result.points_scored
     if play_result.outcome in ["foul"]:
-        fouling_player_id = play_result.player_involved["foul"]
+        fouling_player_id = play_result.player_involved["fouler"]
         game_state.player_fouls[fouling_player_id] += 1
         if play_result.next_possession_team == game_state.possession_team:
             opposing_team = "away" if game_state.possession_team == "home" else "home"
@@ -166,4 +182,7 @@ def update_game_state(game_state: GameState, play_result: PlayResult) -> GameSta
     return game_state
 
 def simulate_possession(game_state: GameState, offense: list[Player], defense: list[Player]) -> PlayResult:
-    pass
+    play = generate_play(game_state)
+    result = resolve_outcome(play, game_state, offense, defense)
+    game_state = update_game_state(game_state, result)
+    return result

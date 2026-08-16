@@ -87,9 +87,14 @@ FOUL_TYPES = {
     }
 }
 
+FOUL_WEIGHTS = {
+    "offensive": 0.10,
+    "defensive": 0.90
+}
 TIME_RANGES_BY_OUTCOME = {
     "turnover": (2, 30, 10),
     "2pt": (4, 30, 18),
     "3pt": (4, 30, 20),
-    "foul": (4, 25, 12)
+    "foul": (4, 25, 12),
+    "block": (4, 30, 18)
 }
