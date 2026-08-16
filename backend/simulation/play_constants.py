@@ -28,6 +28,13 @@ ASSIST_WEIGHTS = {
     "passing": 0.6,
     "pass_iq": 0.4
 }
+
+BLOCK_WEIGHTS = {
+    "height": 0.5,
+    "block": 0.4,
+    "interior_defense": 0.1
+}
+
 REBOUND_WEIGHTS = {
     "offensive": {
         "height_factor": 0.6,
@@ -39,18 +46,25 @@ REBOUND_WEIGHTS = {
     }
 }
 
+SCORING_WEIGHTS = {
+    "inside_scoring": 0.25,
+    "mid_range": 0.25,
+    "3pt": 0.25,
+    "driving_dunk": 0.15,
+    "standing_dunk": 0.1
+}
+
 STEAL_WEIGHTS = {
     "steal": 0.5,
     "speed": 0.3,
     "perimeter_defense": 0.2
 }
 
-BLOCK_WEIGHTS = {
-    "height": 0.5,
-    "block": 0.4,
-    "interior_defense": 0.1
+TURNOVER_WEIGHTS = {
+    "dribbling": 0.4,
+    "passing": 0.3,
+    "pass_iq": 0.3
 }
-
 FOUL_TYPES = {
     "defensive": {
         "reach_in": 0.4,

@@ -2,7 +2,10 @@ from backend.simulation.play_constants import ( MAX_HEIGHT_INCHES,
                                                MIN_HEIGHT_INCHES, 
                                                REBOUND_WEIGHTS, 
                                                STEAL_WEIGHTS,
+                                               SCORING_WEIGHTS,
                                                BLOCK_WEIGHTS,
+                                               ASSIST_WEIGHTS,
+                                               TURNOVER_WEIGHTS,
                                                MAX_RATING )
 from backend.app.models.player import Player
 
@@ -15,13 +18,26 @@ def calculate_rebound_weight(player: Player, rebound_type: str) -> float:
     return skill_weight + height_weight
 
 def calculate_scorer_weight(player: Player) -> float:
-    pass
+    inside_scoring_rating = player.ratings["inside_scoring"] / MAX_RATING
+    mid_range_rating = player.ratings["mid_range"] / MAX_RATING
+    three_point_rating = player.ratings["3pt"] / MAX_RATING
+    driving_dunk_rating = player.ratings["driving_dunk"] / MAX_RATING
+    standing_dunk_rating = player.ratings["standing_dunk"] / MAX_RATING
+    return ( inside_scoring_rating * SCORING_WEIGHTS["inside_scoring"] + mid_range_rating * SCORING_WEIGHTS["mid_range"]
+            + three_point_rating * SCORING_WEIGHTS["3pt"] + driving_dunk_rating * SCORING_WEIGHTS["driving_dunk"]
+            + standing_dunk_rating * SCORING_WEIGHTS["standing_dunk"] )
 
 def calculate_assister_weight(player: Player) -> float:
-    pass
+    passing_rating = player.ratings["passing"] / MAX_RATING
+    pass_iq_rating = player.ratings["pass_iq"] / MAX_RATING
+    return passing_rating * ASSIST_WEIGHTS["passing"] + pass_iq_rating * ASSIST_WEIGHTS["pass_iq"]
 
 def calculate_turnover_weight(player: Player) -> float:
-    pass
+    dribbling_rating = player.ratings["dribbling"] / MAX_RATING
+    passing_rating = player.ratings["passing"] / MAX_RATING
+    pass_iq_rating = player.ratings["pass_iq"] / MAX_RATING
+    return ( 1 - dribbling_rating )* TURNOVER_WEIGHTS["dribbling"] + (1 - passing_rating ) * TURNOVER_WEIGHTS["passing"] + ( 1 - pass_iq_rating ) * TURNOVER_WEIGHTS["pass_iq"]
+
 
 def calculate_stealer_weight(player: Player) -> float:
     steal_rating = player.ratings["steal"] / MAX_RATING
