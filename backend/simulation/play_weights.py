@@ -17,15 +17,15 @@ def calculate_rebound_weight(player: Player, rebound_type: str) -> float:
     skill_weight = REBOUND_WEIGHTS[rebound_type]["skill_factor"] * skill_rating
     return skill_weight + height_weight
 
-def calculate_scorer_weight(player: Player) -> float:
+def calculate_scorer_weight(player: Player, shot_type: str) -> float:
+    if shot_type == "3pt":
+        return player.ratings["3pt"] / MAX_RATING
     inside_scoring_rating = player.ratings["inside_scoring"] / MAX_RATING
     mid_range_rating = player.ratings["mid_range"] / MAX_RATING
-    three_point_rating = player.ratings["3pt"] / MAX_RATING
     driving_dunk_rating = player.ratings["driving_dunk"] / MAX_RATING
     standing_dunk_rating = player.ratings["standing_dunk"] / MAX_RATING
     return ( inside_scoring_rating * SCORING_WEIGHTS["inside_scoring"] + mid_range_rating * SCORING_WEIGHTS["mid_range"]
-            + three_point_rating * SCORING_WEIGHTS["3pt"] + driving_dunk_rating * SCORING_WEIGHTS["driving_dunk"]
-            + standing_dunk_rating * SCORING_WEIGHTS["standing_dunk"] )
+            + driving_dunk_rating * SCORING_WEIGHTS["driving_dunk"] + standing_dunk_rating * SCORING_WEIGHTS["standing_dunk"] )
 
 def calculate_assister_weight(player: Player) -> float:
     passing_rating = player.ratings["passing"] / MAX_RATING
@@ -37,7 +37,6 @@ def calculate_turnover_weight(player: Player) -> float:
     passing_rating = player.ratings["passing"] / MAX_RATING
     pass_iq_rating = player.ratings["pass_iq"] / MAX_RATING
     return ( 1 - dribbling_rating )* TURNOVER_WEIGHTS["dribbling"] + (1 - passing_rating ) * TURNOVER_WEIGHTS["passing"] + ( 1 - pass_iq_rating ) * TURNOVER_WEIGHTS["pass_iq"]
-
 
 def calculate_stealer_weight(player: Player) -> float:
     steal_rating = player.ratings["steal"] / MAX_RATING

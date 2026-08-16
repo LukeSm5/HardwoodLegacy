@@ -47,10 +47,9 @@ REBOUND_WEIGHTS = {
 }
 
 SCORING_WEIGHTS = {
-    "inside_scoring": 0.25,
-    "mid_range": 0.25,
-    "3pt": 0.25,
-    "driving_dunk": 0.15,
+    "inside_scoring": 0.35,
+    "mid_range": 0.35,
+    "driving_dunk": 0.2,
     "standing_dunk": 0.1
 }
 

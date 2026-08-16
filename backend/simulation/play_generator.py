@@ -12,6 +12,14 @@ from backend.simulation.play_constants import (
     FOUL_TYPES, 
     BONUS_THRESHOLD, 
     DOUBLE_BONUS_THRESHOLD)
+from backend.simulation.play_weights import (
+    calculate_rebound_weight,
+    calculate_assister_weight,
+    calculate_blocker_weight,
+    calculate_scorer_weight,
+    calculate_stealer_weight,
+    calculate_turnover_weight
+)
 
 # Outcomes:
 # 2 pt (make/miss)
@@ -89,11 +97,34 @@ def generate_play(game_state: GameState) -> str:
     weights = list(POSSESSION_OUTCOMES.values())
     return random.choices(outcomes, weights=weights, k=1)[0]
 
-def pick_player_for_play(roster: list[Player], role: str) -> Player:
-    pass
+def pick_player_for_play(roster: list[Player], role: str, sub_type: str = None) -> Player:
+    if role == "shooter":
+        weights = [calculate_scorer_weight(player, sub_type) for player in roster]
+    elif role == "rebounder":
+        weights = [calculate_rebound_weight(player, sub_type) for player in roster]
+    elif role == "assister":
+        weights = [calculate_assister_weight(player) for player in roster]
+    elif role == "turnover_recipient":
+        weights = [calculate_turnover_weight(player) for player in roster]
+    elif role == "stealer":
+        weights = [calculate_stealer_weight(player) for player in roster]
+    elif role == "blocker":
+        weights = [calculate_blocker_weight(player) for player in roster]
+    else:
+        raise ValueError(f"Unknown role: {role}")
+    return random.choices(roster, weights=weights, k=1)[0]
 
 def resolve_outcome(outcome: str, game_state: GameState, offense: list[Player], defense: list[Player]) -> PlayResult:
-    pass
+    if outcome == "2pt":
+        pass
+    elif outcome == "3pt":
+        pass
+    elif outcome == "foul":
+        pass
+    elif outcome == "turnover":
+        pass
+    elif outcome == "block":
+        pass
 
 def consume_time(outcome: str) -> float:
     low, high, mode = TIME_RANGES_BY_OUTCOME.get(outcome, (4, 30, 15))
