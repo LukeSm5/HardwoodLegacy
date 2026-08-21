@@ -137,6 +137,7 @@ def determine_two_point_shot_type() -> str:
 def resolve_outcome(outcome: str, game_state: GameState, offense: list[Player], defense: list[Player]) -> PlayResult:
     defending_team = "away" if game_state.possession_team == "home" else "home"
     rebounder = None
+    assister = None
     if outcome == "2pt":
         shooter = pick_player_for_play(offense, "shooter")
         two_point_shot = determine_two_point_shot_type()
@@ -145,6 +146,7 @@ def resolve_outcome(outcome: str, game_state: GameState, offense: list[Player], 
         if made:
             points_scored = 2
             next_possession_team = defending_team
+            assist = roll_assist_outcome()
             if assist:
                 assister = pick_player_for_play(offense, "assister")
         else:
